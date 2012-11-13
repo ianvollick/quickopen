@@ -50,18 +50,25 @@ class DBProxy(object):
     self._dir_lut = {}
 
   def try_to_start_quickopend(self):
-    args = ['./quickopend', 'run']
+    basepath = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    quickopend_path = os.path.join(basepath, "quickopend")
+    assert os.path.exists(quickopend_path)
+    args = [quickopend_path, 'run']
     sys.stderr.write('No quickopend running. Launching it...\n')
     self.proc = subprocess.Popen(args)
 
     sys.stderr.write('Making sure it came up on port %i\n' % self._port_for_autostart)
     ok = False
-    for i in range(10):
+
+    per_iter_delay = 0.1
+    timeout = 10
+    num_tries = int(timeout / per_iter_delay)
+    for i in range(num_tries):
       try:
         conn = httplib.HTTPConnection('localhost', self._port_for_autostart, True)
         conn.request('GET', '/ping')
-      except:
-        time.sleep(0.05)
+      except Exception, ex:
+        time.sleep(per_iter_delay)
         continue
 
       res = conn.getresponse()
@@ -126,7 +133,7 @@ class DBProxy(object):
     return map(lambda x: self._get_dir(x["id"], x["path"]), ret)
 
   def add_dir(self, d):
-    ret = self._req('POST', '/dirs/add', {"path": d})
+    ret = self._req('POST', '/dirs/add', {"path": os.path.abspath(d)})
     assert ret["status"] == 'OK'
     return self._get_dir(ret["id"], d)
 
@@ -148,6 +155,16 @@ class DBProxy(object):
       ret = self._req('POST', '/ignores/remove', i)
     except:
       raise "Pattern not found"
+
+  def get_oauth(self):
+    ret = self._req('GET', '/get_oauth')
+    if not 'token' in ret:
+      return None
+    return ret['token']
+
+  def set_oauth(self, token):
+    ret = self._req('POST', '/set_oauth', {"token": token})
+    assert ret["status"] == 'OK'
 
   @tracedmethod
   def search(self, *args, **kwargs):

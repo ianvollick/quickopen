@@ -11,25 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import collections
 import os
-import time
-import json
-
-class DBIndexer(object):
-  def __init__(self, dirs):
+class MockDBIndexer(object):
+  def __init__(self, dirs, files = [], files_by_basename = {}):
     self.dirs = dirs
-    self.complete = False
-    self.files_by_basename = dict()
+    self.files_by_basename = files_by_basename
+    for f in files:
+      bn = os.path.basename(f)
+      if bn not in self.files_by_basename:
+        self.files_by_basename[bn] = []
+      self.files_by_basename[bn].append(f)
 
-  def progress(self):
-    raise NotImplementedException()
-
-def Create(dirs, dir_cache):
-  import find_based_db_indexer
-  if find_based_db_indexer.Supported():
-    return find_based_db_indexer.FindBasedDBIndexer(
-      dirs, dir_cache.ignores)
-
-  import listdir_based_db_indexer
-  return listdir_based_db_indexer.ListdirBasedDBIndexer(dirs, dir_cache)

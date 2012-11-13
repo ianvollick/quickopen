@@ -15,6 +15,9 @@ curses UI doesn't know when the terminal resized.
 
 Features
 ---------------------------------------------------------------------------
+- find_based_db_indexer has to split every basename on / and then
+  apply every glob against each part. This seems unnecessarily slow.
+
 
 - Rank files "nearer" to the current file when there are multiple equivalent matches
    e.g.
@@ -34,15 +37,11 @@ Features
       typically hits ../../../...../test_utils.cc but
       also there is a test_utils.js in the same folder.
 
-- Use current-buffer and active-buffer list in ranking
-
 - Try out Goog codesearch-style trigraph-based indexes for fuzzy matching
 
 - rwh::ddu -> use ctags to do fuzzy search for ddu on the files matching rwh
 
 - Add fuzziness to dir matching and ranking?
-
-- Speed up indexing operation
 
 - Reduce memory footprint
 
